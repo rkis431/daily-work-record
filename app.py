@@ -76,7 +76,7 @@ def main():
   visibility: hidden;
 }
 """
-st.markdown(hide_github_icon, unsafe_allow_html=True)
+    st.markdown(hide_github_icon, unsafe_allow_html=True)
     st.markdown(
         """
         <style>
