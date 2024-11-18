@@ -6,4 +6,3 @@ plotly
 datetime
 
 
-https://employeerecord-hdtliegjbxlkw9dtkoc6jt.streamlit.app/
