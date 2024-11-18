@@ -2,7 +2,7 @@ pandas
 numpy 
 streamlit
 os
-ploty
+plotly
 datetime
 
 
