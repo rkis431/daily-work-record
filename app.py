@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import plotly.express as px
 
-# Employee and Admin data
+
 EMPLOYEES = {
     'rawatanmol0512@gmail.com': {'id': 'E001', 'password': 'password123'},
     'rawatanmol0512@gmail_2.com': {'id': 'E003', 'password': 'password123'},
@@ -11,19 +11,15 @@ EMPLOYEES = {
 }
 ADMINS = {'admin@example.com': {'id': 'A001', 'password': 'adminpass'}}
 
-# CSV file paths
 WORK_CSV = 'employee_data_main.csv'
 PLAN_CSV = 'tomorrow_plan_main.csv'
 
 
-# Helper functions
 def load_work_data():
     try:
         return pd.read_csv(WORK_CSV)
     except FileNotFoundError:
-        st.warning(f"{WORK_CSV} not found. Initializing with an empty dataset.")
         return pd.DataFrame(columns=['Date', 'Time', 'Email', 'Task', 'Remarks', 'Final Report'])
-
 
 def load_plan_data():
     try:
@@ -31,21 +27,17 @@ def load_plan_data():
         df['Date'] = df['Date'].dt.date
         return df
     except FileNotFoundError:
-        st.warning(f"{PLAN_CSV} not found. Initializing with an empty dataset.")
         return pd.DataFrame(columns=['Date', 'Email', 'Tomorrow Plan', 'Start Time', 'End Time'])
-
 
 def save_work_data(df):
     df.to_csv(WORK_CSV, index=False)
 
-
 def save_plan_data(df):
     df.to_csv(PLAN_CSV, index=False)
 
-
 def filter_data(df, filter_type, start_date=None, end_date=None, email_filter=None):
     today = datetime.now().date()
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce').dt.date
+    df['Date'] = pd.to_datetime(df['Date']).dt.date
 
     if filter_type == "Today":
         df = df[df['Date'] == today]
@@ -63,9 +55,8 @@ def filter_data(df, filter_type, start_date=None, end_date=None, email_filter=No
 
     if email_filter:
         df = df[df['Email'] == email_filter]
-
+        
     return df
-
 
 def display_employee_profile():
     profile_section = f"""
@@ -77,23 +68,26 @@ def display_employee_profile():
     st.markdown(profile_section, unsafe_allow_html=True)
 
 
-# Main app function
 def main():
     st.set_page_config(page_title="Employee Management App", layout="wide")
 
+    
     st.markdown(
         """
         <style>
+        .stDeployButton {
+            visibility: hidden;
+        }
         footer {visibility: hidden;}
-        #GithubIcon {visibility: hidden;}
+        .css-1q8dd3e.e1fqkh3o0 {visibility: hidden;}
         </style>
-        """,
+        """, 
         unsafe_allow_html=True
     )
 
     st.markdown("<h1 style='text-align: center;'>👔 Employee Management Dashboard</h1>", unsafe_allow_html=True)
 
-    # Initialize session state variables
+    
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
         st.session_state.user_email = ""
@@ -110,7 +104,7 @@ def main():
             st.experimental_rerun()
 
     if not st.session_state.logged_in:
-        # Login form
+        
         choice = st.sidebar.selectbox("Choose your role", ["Employee 👤", "Admin 🛠️"], index=0)
         email = st.text_input("📧 Enter your Email ID")
         user_id = st.text_input("🔑 Enter your ID")
@@ -121,11 +115,13 @@ def main():
                 st.session_state.logged_in = True
                 st.session_state.user_email = email
                 st.session_state.user_role = "Employee"
+                st.success("👤 Employee login successful!")
                 st.experimental_rerun()
             elif choice == "Admin 🛠️" and email in ADMINS and ADMINS[email]['id'] == user_id and ADMINS[email]['password'] == password:
                 st.session_state.logged_in = True
                 st.session_state.user_email = email
                 st.session_state.user_role = "Admin"
+                st.success("🛠️ Admin login successful!")
                 st.experimental_rerun()
             else:
                 st.error("❌ Invalid credentials")
@@ -170,7 +166,7 @@ def main():
                 else:
                     plan_df = load_plan_data()
                     new_plan = pd.DataFrame([{
-                        'Date': datetime.now().date(), 'Email': st.session_state.user_email,
+                        'Date': datetime.now().date(), 'Email': st.session_state.user_email, 
                         'Tomorrow Plan': plan, 'Start Time': start_time, 'End Time': end_time
                     }])
                     plan_df = pd.concat([plan_df, new_plan], ignore_index=True)
@@ -183,31 +179,46 @@ def main():
             user_entries = work_df[work_df['Email'] == st.session_state.user_email]
             st.dataframe(user_entries)
 
+            st.markdown("### Tomorrow's Plan Entries")
+            plan_df = load_plan_data()
+            tomorrow_plan_entries = plan_df[plan_df['Email'] == st.session_state.user_email]
+            st.dataframe(tomorrow_plan_entries)
+
     elif st.session_state.user_role == "Admin":
         st.title("🛠️ Admin Dashboard")
+        st.subheader("📊 View Work Data")
+
         tabs = st.tabs(["📅 Today's Work", "📋 Tomorrow's Plan", "Analytics", "Employee Data Filter"])
 
         with tabs[0]:
+            st.subheader("📅 Today's Work Data")
             work_df = load_work_data()
-            st.dataframe(filter_data(work_df, "Today"))
+            admin_filter_email = st.text_input("🔍 Filter by Email", key="admin_work_email")
+            work_data = filter_data(work_df, "Today", email_filter=admin_filter_email)
+            st.dataframe(work_data)
 
         with tabs[1]:
+            st.subheader("📋 Tomorrow's Plan Data")
             plan_df = load_plan_data()
-            st.dataframe(plan_df)
+            plan_data = filter_data(plan_df, "Today")
+            st.dataframe(plan_data)
 
         with tabs[2]:
+            st.subheader("📈 Analytics")
             work_df = load_work_data()
-            analytics = work_df.groupby('Email')['Task'].count().reset_index().rename(columns={'Task': 'Total Tasks'})
-            fig = px.bar(analytics, x='Email', y='Total Tasks', title="Total Tasks by Employee", text_auto=True)
+            work_by_employee = work_df.groupby('Email')['Task'].count().reset_index().rename(columns={'Task': 'Total Tasks'})
+            fig = px.bar(work_by_employee, x='Email', y='Total Tasks', title="Total Tasks by Employee", text_auto=True)
             st.plotly_chart(fig)
 
         with tabs[3]:
-            start_date = st.date_input("Start Date")
-            end_date = st.date_input("End Date")
-            email_filter = st.text_input("Filter by Email")
-            filtered_data = filter_data(load_work_data(), "Date Range", start_date, end_date, email_filter)
-            st.dataframe(filtered_data)
-
+            st.subheader("📂 Filter Employee Data")
+            work_df = load_work_data()
+            start_date = st.date_input("📆 Start Date", key="start_date_filter")
+            end_date = st.date_input("📆 End Date", key="end_date_filter")
+            email_filter = st.text_input("🔍 Filter by Email", key="admin_employee_email_filter")
+            if st.button("🔍 Filter Data"):
+                filtered_data = filter_data(work_df, "Date Range", start_date, end_date, email_filter)
+                st.dataframe(filtered_data)
 
 if __name__ == "__main__":
     main()
