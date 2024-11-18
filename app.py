@@ -7,7 +7,8 @@ import plotly.express as px
 EMPLOYEES = {
     'rawatanmol0512@gmail.com': {'id': 'E001', 'password': 'password123'},
     'rawatanmol0512@gmail_2.com': {'id': 'E003', 'password': 'password123'},
-    'vibhorvashistha3@gmail.com': {'id': 'E002', 'password': 'password456'}
+    'vibhorvashistha3@gmail.com': {'id': 'E002', 'password': 'password456'},
+    'anjalisharmakkmrt@gmail.com': {'id': 'RKIS3810006', 'password': 'ANJALI'},
 }
 ADMINS = {'admin@example.com': {'id': 'A001', 'password': 'adminpass'}}
 
