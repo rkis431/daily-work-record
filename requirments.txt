@@ -1,0 +1,9 @@
+pandas
+numpy 
+streamlit
+os
+ploty
+datetime
+
+
+https://employeerecord-hdtliegjbxlkw9dtkoc6jt.streamlit.app/
