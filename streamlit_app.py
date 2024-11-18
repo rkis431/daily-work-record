@@ -81,7 +81,7 @@ def display_employee_profile():
 def main():
     st.set_page_config(page_title="Your App", page_icon=":icon:", menu_items={"Get help": None, "Report a bug": None, "About": None})
 
-    st.set_page_config(page_title="Employee Management App", layout="wide")
+    #st.set_page_config(page_title="Employee Management App", layout="wide")
 
     # Hide Streamlit branding
     st.markdown(
