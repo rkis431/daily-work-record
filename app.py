@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import plotly.express as px
 
-
+# User data
 EMPLOYEES = {
     'rawatanmol0512@gmail.com': {'id': 'E001', 'password': 'password123'},
     'rawatanmol0512@gmail_2.com': {'id': 'E003', 'password': 'password123'},
@@ -11,15 +11,18 @@ EMPLOYEES = {
 }
 ADMINS = {'admin@example.com': {'id': 'A001', 'password': 'adminpass'}}
 
+# File paths
 WORK_CSV = 'employee_data_main.csv'
 PLAN_CSV = 'tomorrow_plan_main.csv'
 
 
+# Data loading and saving functions
 def load_work_data():
     try:
         return pd.read_csv(WORK_CSV)
     except FileNotFoundError:
         return pd.DataFrame(columns=['Date', 'Time', 'Email', 'Task', 'Remarks', 'Final Report'])
+
 
 def load_plan_data():
     try:
@@ -29,12 +32,16 @@ def load_plan_data():
     except FileNotFoundError:
         return pd.DataFrame(columns=['Date', 'Email', 'Tomorrow Plan', 'Start Time', 'End Time'])
 
+
 def save_work_data(df):
     df.to_csv(WORK_CSV, index=False)
+
 
 def save_plan_data(df):
     df.to_csv(PLAN_CSV, index=False)
 
+
+# Utility for filtering data
 def filter_data(df, filter_type, start_date=None, end_date=None, email_filter=None):
     today = datetime.now().date()
     df['Date'] = pd.to_datetime(df['Date']).dt.date
@@ -55,8 +62,9 @@ def filter_data(df, filter_type, start_date=None, end_date=None, email_filter=No
 
     if email_filter:
         df = df[df['Email'] == email_filter]
-        
+
     return df
+
 
 def display_employee_profile():
     profile_section = f"""
@@ -68,10 +76,11 @@ def display_employee_profile():
     st.markdown(profile_section, unsafe_allow_html=True)
 
 
+# Main function
 def main():
     st.set_page_config(page_title="Employee Management App", layout="wide")
 
-    
+    # Hide Streamlit branding
     st.markdown(
         """
         <style>
@@ -81,13 +90,13 @@ def main():
         footer {visibility: hidden;}
         .css-1q8dd3e.e1fqkh3o0 {visibility: hidden;}
         </style>
-        """, 
-        unsafe_allow_html=True
+        """,
+        unsafe_allow_html=True,
     )
 
     st.markdown("<h1 style='text-align: center;'>👔 Employee Management Dashboard</h1>", unsafe_allow_html=True)
 
-    
+    # Initialize session state
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
         st.session_state.user_email = ""
@@ -101,10 +110,9 @@ def main():
             st.session_state.logged_in = False
             st.session_state.user_email = ""
             st.session_state.user_role = ""
-            st.experimental_rerun()
 
     if not st.session_state.logged_in:
-        
+        # Login UI
         choice = st.sidebar.selectbox("Choose your role", ["Employee 👤", "Admin 🛠️"], index=0)
         email = st.text_input("📧 Enter your Email ID")
         user_id = st.text_input("🔑 Enter your ID")
@@ -116,17 +124,16 @@ def main():
                 st.session_state.user_email = email
                 st.session_state.user_role = "Employee"
                 st.success("👤 Employee login successful!")
-                st.experimental_rerun()
             elif choice == "Admin 🛠️" and email in ADMINS and ADMINS[email]['id'] == user_id and ADMINS[email]['password'] == password:
                 st.session_state.logged_in = True
                 st.session_state.user_email = email
                 st.session_state.user_role = "Admin"
                 st.success("🛠️ Admin login successful!")
-                st.experimental_rerun()
             else:
                 st.error("❌ Invalid credentials")
 
     elif st.session_state.user_role == "Employee":
+        # Employee Dashboard
         st.title("👤 Employee Dashboard")
         display_employee_profile()
 
@@ -166,7 +173,7 @@ def main():
                 else:
                     plan_df = load_plan_data()
                     new_plan = pd.DataFrame([{
-                        'Date': datetime.now().date(), 'Email': st.session_state.user_email, 
+                        'Date': datetime.now().date(), 'Email': st.session_state.user_email,
                         'Tomorrow Plan': plan, 'Start Time': start_time, 'End Time': end_time
                     }])
                     plan_df = pd.concat([plan_df, new_plan], ignore_index=True)
@@ -185,6 +192,7 @@ def main():
             st.dataframe(tomorrow_plan_entries)
 
     elif st.session_state.user_role == "Admin":
+        # Admin Dashboard
         st.title("🛠️ Admin Dashboard")
         st.subheader("📊 View Work Data")
 
@@ -219,6 +227,7 @@ def main():
             if st.button("🔍 Filter Data"):
                 filtered_data = filter_data(work_df, "Date Range", start_date, end_date, email_filter)
                 st.dataframe(filtered_data)
+
 
 if __name__ == "__main__":
     main()
