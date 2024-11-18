@@ -3,27 +3,24 @@ import pandas as pd
 from datetime import datetime, timedelta
 import plotly.express as px
 
-# User data
-EMPLOYEES = {
-    'rawatanmol0512@gmail.com': {'id': 'E001', 'password': 'password123'},
-    'rawatanmol0512@gmail_2.com': {'id': 'E003', 'password': 'password123'},
-    'vibhorvashistha3@gmail.com': {'id': 'E002', 'password': 'password456'},
-    'anjalisharmakkmrt@gmail.com': {'id': 'RKIS3810006', 'password': 'ANJALI'},
-}
-ADMINS = {'admin@example.com': {'id': 'A001', 'password': 'adminpass'}}
-
-# File paths
-WORK_CSV = 'employee_data_main.csv'
-PLAN_CSV = 'tomorrow_plan_main.csv'
 
 
-# Data loading and saving functions
+def load_employees():
+    try:
+        return pd.read_csv(EMPLOYEE_CSV)
+    except FileNotFoundError:
+        return pd.DataFrame(columns=['Email', 'ID', 'Password'])
+
+
+def save_employees(df):
+    df.to_csv(EMPLOYEE_CSV, index=False)
+
+
 def load_work_data():
     try:
         return pd.read_csv(WORK_CSV)
     except FileNotFoundError:
         return pd.DataFrame(columns=['Date', 'Time', 'Email', 'Task', 'Remarks', 'Final Report'])
-
 
 def load_plan_data():
     try:
@@ -33,16 +30,13 @@ def load_plan_data():
     except FileNotFoundError:
         return pd.DataFrame(columns=['Date', 'Email', 'Tomorrow Plan', 'Start Time', 'End Time'])
 
-
 def save_work_data(df):
     df.to_csv(WORK_CSV, index=False)
-
 
 def save_plan_data(df):
     df.to_csv(PLAN_CSV, index=False)
 
 
-# Utility for filtering data
 def filter_data(df, filter_type, start_date=None, end_date=None, email_filter=None):
     today = datetime.now().date()
     df['Date'] = pd.to_datetime(df['Date']).dt.date
@@ -76,30 +70,14 @@ def display_employee_profile():
     """
     st.markdown(profile_section, unsafe_allow_html=True)
 
-
-# Main function
+ADMINS = {'admin@example.com': {'id': 'A001', 'password': 'adminpass'}}
+EMPLOYEE_CSV = 'employee_list.csv'
+WORK_CSV = 'employee_data_main.csv'
+PLAN_CSV = 'tomorrow_plan_main.csv'
 def main():
-    st.set_page_config(page_title="Your App", page_icon=":icon:", menu_items={"Get help": None, "Report a bug": None, "About": None})
+    st.set_page_config(page_title="Employee Management Dashboard", page_icon=":briefcase:", layout="wide")
 
-    #st.set_page_config(page_title="Employee Management App", layout="wide")
-
-    # Hide Streamlit branding
-    st.markdown(
-        """
-        <style>
-        .stDeployButton {
-            visibility: hidden;
-        }
-        footer {visibility: hidden;}
-        .css-1q8dd3e.e1fqkh3o0 {visibility: hidden;}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("<h1 style='text-align: center;'>👔 Employee Management Dashboard</h1>", unsafe_allow_html=True)
-
-    # Initialize session state
+    
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
         st.session_state.user_email = ""
@@ -115,18 +93,26 @@ def main():
             st.session_state.user_role = ""
 
     if not st.session_state.logged_in:
-        # Login UI
+        
         choice = st.sidebar.selectbox("Choose your role", ["Employee 👤", "Admin 🛠️"], index=0)
         email = st.text_input("📧 Enter your Email ID")
         user_id = st.text_input("🔑 Enter your ID")
         password = st.text_input("🔒 Enter your Password", type="password")
 
         if st.button("Login"):
-            if choice == "Employee 👤" and email in EMPLOYEES and EMPLOYEES[email]['id'] == user_id and EMPLOYEES[email]['password'] == password:
-                st.session_state.logged_in = True
-                st.session_state.user_email = email
-                st.session_state.user_role = "Employee"
-                st.success("👤 Employee login successful!")
+            if choice == "Employee 👤":
+                
+                employee_df = load_employees()
+                employee = employee_df[(employee_df['Email'] == email) & 
+                                       (employee_df['ID'] == user_id) & 
+                                       (employee_df['Password'] == password)]
+                if not employee.empty:
+                    st.session_state.logged_in = True
+                    st.session_state.user_email = email
+                    st.session_state.user_role = "Employee"
+                    st.success("👤 Employee login successful!")
+                else:
+                    st.error("❌ Invalid credentials")
             elif choice == "Admin 🛠️" and email in ADMINS and ADMINS[email]['id'] == user_id and ADMINS[email]['password'] == password:
                 st.session_state.logged_in = True
                 st.session_state.user_email = email
@@ -136,7 +122,7 @@ def main():
                 st.error("❌ Invalid credentials")
 
     elif st.session_state.user_role == "Employee":
-        # Employee Dashboard
+        
         st.title("👤 Employee Dashboard")
         display_employee_profile()
 
@@ -195,11 +181,9 @@ def main():
             st.dataframe(tomorrow_plan_entries)
 
     elif st.session_state.user_role == "Admin":
-        # Admin Dashboard
+        
         st.title("🛠️ Admin Dashboard")
-        st.subheader("📊 View Work Data")
-
-        tabs = st.tabs(["📅 Today's Work", "📋 Tomorrow's Plan", "Analytics", "Employee Data Filter"])
+        tabs = st.tabs(["📅 Today's Work", "📋 Tomorrow's Plan", "Analytics", "Employee Data Filter", "➕ Add Employees"])
 
         with tabs[0]:
             st.subheader("📅 Today's Work Data")
@@ -226,11 +210,29 @@ def main():
             work_df = load_work_data()
             start_date = st.date_input("📆 Start Date", key="start_date_filter")
             end_date = st.date_input("📆 End Date", key="end_date_filter")
-            email_filter = st.text_input("🔍 Filter by Email", key="admin_employee_email_filter")
-            if st.button("🔍 Filter Data"):
-                filtered_data = filter_data(work_df, "Date Range", start_date, end_date, email_filter)
-                st.dataframe(filtered_data)
+            email_filter = st.text_input("🔍 Filter by Email", key="employee_filter")
 
+            filtered_data = filter_data(work_df, "Date Range", start_date=start_date, end_date=end_date, email_filter=email_filter)
+            st.dataframe(filtered_data)
+
+        with tabs[4]:
+            st.subheader("➕ Add New Employees")
+            new_email = st.text_input("📧 Employee Email")
+            new_id = st.text_input("🔑 Employee ID")
+            new_password = st.text_input("🔒 Password", type="password")
+
+            if st.button("✅ Add Employee"):
+                if new_email and new_id and new_password:
+                    employee_df = load_employees()
+                    if new_email in employee_df['Email'].values:
+                        st.warning(f"⚠️ Employee with Email '{new_email}' already exists!")
+                    else:
+                        new_employee = pd.DataFrame([{'Email': new_email, 'ID': new_id, 'Password': new_password}])
+                        employee_df = pd.concat([employee_df, new_employee], ignore_index=True)
+                        save_employees(employee_df)
+                        st.success(f"✅ Employee with Email '{new_email}' added successfully!")
+                else:
+                    st.error("❗ Please fill all fields to add a new employee!")
 
 if __name__ == "__main__":
     main()
