@@ -1,7 +1,7 @@
 pandas
 numpy 
 streamlit
-pip show plotly
+plotly
 
 
 
