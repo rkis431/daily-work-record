@@ -71,6 +71,22 @@ def display_employee_profile():
 def main():
     st.set_page_config(page_title="Employee Management App", layout="wide")
 
+    st.markdown(
+    """
+    <style>
+    #GithubIcon {
+        visibility: hidden;
+    }
+    .css-1q8dd3e.e1fqkh3o0, footer {
+        visibility: hidden;
+        height: 0px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
     hide_github_icon = """
 #GithubIcon {
   visibility: hidden;
