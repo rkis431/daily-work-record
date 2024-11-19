@@ -24,8 +24,14 @@ def load_work_data():
 
 def load_plan_data():
     try:
-        df = pd.read_csv(PLAN_CSV, parse_dates=['Date'])
-        df['Date'] = df['Date'].dt.date
+        df = pd.read_csv(PLAN_CSV)
+        if 'Date' in df.columns:
+            # Attempt to parse the 'Date' column
+            df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+            df['Date'] = df['Date'].dt.date
+        else:
+            # If 'Date' column is missing, create an empty one
+            df['Date'] = pd.NaT
         return df
     except FileNotFoundError:
         return pd.DataFrame(columns=['Date', 'Email', 'Tomorrow Plan', 'Start Time', 'End Time'])
