@@ -76,7 +76,7 @@ def display_employee_profile():
     """
     st.markdown(profile_section, unsafe_allow_html=True)
 
-ADMINS = {'admin@example.com': {'id': 'A001', 'password': 'adminpass'}}
+ADMINS = {'rkis@admin.com': {'id': 'A001', 'password': 'rkis@0011'}}
 EMPLOYEE_CSV = 'employee_list.csv'
 WORK_CSV = 'employee_data_main.csv'
 PLAN_CSV = 'tomorrow_plan_main.csv'
