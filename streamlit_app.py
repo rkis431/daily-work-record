@@ -211,15 +211,6 @@ def main():
             fig = px.bar(work_by_employee, x='Email', y='Total Tasks', title="Total Tasks by Employee", text_auto=True)
             st.plotly_chart(fig)
 
-        """with tabs[3]:
-            st.subheader("📂 Filter Employee Data")
-            work_df = load_work_data()
-            start_date = st.date_input("📆 Start Date", key="start_date_filter")
-            end_date = st.date_input("📆 End Date", key="end_date_filter")
-            email_filter = st.text_input("🔍 Filter by Email", key="employee_filter")
-
-            filtered_data = filter_data(work_df, "Date Range", start_date=start_date, end_date=end_date, email_filter=email_filter)
-            st.dataframe(filtered_data)"""
         with tabs[3]:
             st.subheader("📂 Filter Employee Data")
     
