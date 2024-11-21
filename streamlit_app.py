@@ -221,39 +221,39 @@ def main():
             filtered_data = filter_data(work_df, "Date Range", start_date=start_date, end_date=end_date, email_filter=email_filter)
             st.dataframe(filtered_data)"""
         with tabs[3]:
-    st.subheader("📂 Filter Employee Data")
+            st.subheader("📂 Filter Employee Data")
     
     # Filter Type Selection
-    filter_type = st.radio("📅 Select Filter Type", 
+            filter_type = st.radio("📅 Select Filter Type", 
                            ["Today", "Yesterday", "Weekly", "Monthly", "Yearly", "Date Range"], 
                            horizontal=True)
     
     # Date Range Inputs (Visible only if "Date Range" is selected)
-    start_date = None
-    end_date = None
-    if filter_type == "Date Range":
-        col1, col2 = st.columns(2)
-        with col1:
-            start_date = st.date_input("📆 Start Date")
-        with col2:
-            end_date = st.date_input("📆 End Date")
+            start_date = None
+            end_date = None
+            if filter_type == "Date Range":
+            col1, col2 = st.columns(2)
+            with col1:
+                start_date = st.date_input("📆 Start Date")
+            with col2:
+                end_date = st.date_input("📆 End Date")
     
     # Email Filter
-    email_filter = st.text_input("🔍 Filter by Email (Optional)")
+            email_filter = st.text_input("🔍 Filter by Email (Optional)")
     
     # Load Work Data
-    work_df = load_work_data()
+            work_df = load_work_data()
     
     # Apply Filter
-    filtered_data = filter_data(work_df, filter_type, start_date, end_date, email_filter)
+            filtered_data = filter_data(work_df, filter_type, start_date, end_date, email_filter)
     
     # Display Filtered Data
-    st.dataframe(filtered_data)
+            st.dataframe(filtered_data)
     
     # Download Filtered Data as CSV
-    if not filtered_data.empty:
-        csv = filtered_data.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Download Data as CSV", data=csv, file_name='filtered_employee_data.csv', mime='text/csv')
+            if not filtered_data.empty:
+            csv = filtered_data.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download Data as CSV", data=csv, file_name='filtered_employee_data.csv', mime='text/csv')
 
 
         with tabs[4]:
